@@ -15,11 +15,17 @@ import (
 )
 
 func main() {
+
+	app := Setup()
+
+	app.ListenTLS(":"+os.Getenv("API_PORT"), "./server.crt", "./server.key")
+}
+
+func Setup() *fiber.App {
 	// Load env vars
 	if err := godotenv.Load(".env"); err != nil {
 		panic("Error loading .env file")
 	}
-
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,
@@ -33,16 +39,6 @@ func main() {
 	)
 
 	database.InitDatabase()
-	// setupRoutes(app)
 	routes.SetupRoutes(app)
-
-	// app.Listen(":3000")
-	// ln, _ := net.Listen("tcp", (":" + os.Getenv("API_PORT")))
-
-	// cer, _ := tls.LoadX509KeyPair("server.crt", "server.key")
-
-	// ln = tls.NewListener(ln, &tls.Config{Certificates: []tls.Certificate{cer}})
-
-	// app.Listener(ln)
-	app.ListenTLS(":"+os.Getenv("API_PORT"), "./server.crt", "./server.key")
+	return app
 }

@@ -10,6 +10,7 @@ require (
 	github.com/lib/pq v1.6.0 // indirect
 	github.com/markbates/goth v1.67.1
 	github.com/shareed2k/goth_fiber v0.2.3
+	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/valyala/fasthttp v1.28.0 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	gorm.io/driver/postgres v1.1.0

@@ -8,7 +8,6 @@ import (
 	// "github.com/joho/godotenv"
 	"github.com/rs401/TFG/models"
 	"gorm.io/driver/postgres"
-	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 

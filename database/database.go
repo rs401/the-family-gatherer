@@ -18,11 +18,6 @@ var (
 
 func InitDatabase() {
 	var err error
-	// get env vars
-	// err = godotenv.Load()
-	// if err != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
 	dbpass := os.Getenv("POSTGRES_PASSWORD")
 	dbuser := os.Getenv("POSTGRES_USER")
 	dbport := os.Getenv("POSTGRES_PORT")

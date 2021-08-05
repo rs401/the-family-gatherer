@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs401/TFG/database"
 	"github.com/rs401/TFG/models"
+	"github.com/shareed2k/goth_fiber"
 )
 
 // Get all forums and return with index template
@@ -12,6 +15,11 @@ func GetIndex(c *fiber.Ctx) error {
 	var forums []models.Forum
 	db.Find(&forums)
 	// return c.JSON(forums)
+	session, err := goth_fiber.SessionStore.Get(c)
+	if err != nil {
+		return err
+	}
+	fmt.Println(session.Get("user"))
 	return c.Render("index", fiber.Map{
 		"Title":  "Hello, World!",
 		"Forums": forums,
@@ -27,4 +35,28 @@ func GetAbout(c *fiber.Ctx) error {
 	return c.Render("about", fiber.Map{
 		"Title": "About",
 	})
+}
+
+// Get CreateForum
+func GetCreateForum(c *fiber.Ctx) error {
+	// return c.JSON(forums)
+	return c.Render("create_forum", fiber.Map{
+		"Title": "Create Forum",
+	})
+}
+
+// Get CreateForum
+func PostCreateForum(c *fiber.Ctx) error {
+	db := database.DBConn
+	forum := new(models.Forum)
+
+	if err := c.BodyParser(forum); err != nil {
+		return c.Status(503).SendString("The Error: " + err.Error())
+	}
+	// forum.User = c.
+	db.Create(&forum)
+	return c.Redirect("/")
+	// return c.Render("index", fiber.Map{
+	// 	"Title": "TFG",
+	// })
 }

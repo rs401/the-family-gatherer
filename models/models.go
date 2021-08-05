@@ -8,11 +8,14 @@ type User struct {
 	Email       string `json:"email" gorm:"unique;not null"`
 	Posts       []Post
 	Threads     []Thread
+	Forums      []Forum
 }
 
 type Forum struct {
 	gorm.Model
-	Name    string `json:"name" gorm:"not null"`
+	Name    string `json:"name" gorm:"not null" form:"name"`
+	UserID  uint   `json:"userid" gorm:"not null"`
+	User    User
 	Threads []Thread
 }
 

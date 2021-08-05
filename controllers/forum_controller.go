@@ -19,7 +19,10 @@ func GetForums(c *fiber.Ctx) error {
 // Get single forum
 func GetForum(c *fiber.Ctx) error {
 	db := database.DBConn
-	id := c.Params("id")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return err
+	}
 	var forum models.Forum
 	db.Find(&forum, id)
 	if forum.Name == "" {
@@ -34,16 +37,22 @@ func NewForum(c *fiber.Ctx) error {
 	if err := c.BodyParser(&forum); err != nil {
 		return c.Status(503).SendString(err.Error())
 	}
+	// Need to figure out if I need to be setting a session or if it's auto in goth_fiber
+	// need to figure out how to get the user from the session and add to forum
+	// forum.UserID =
 	db.Create(&forum)
 	return c.JSON(forum)
 }
 
 func DeleteForum(c *fiber.Ctx) error {
 	db := database.DBConn
-	id := c.Params("id")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 	var forum models.Forum
-	db.Find(&forum, id)
-	if forum.Name == "" {
+	res := db.Find(&forum, id)
+	if res.Error != nil {
 		return c.Status(500).SendString("Forum does not exist in the database.")
 	}
 

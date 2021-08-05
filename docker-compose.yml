@@ -21,7 +21,7 @@ services:
       - ./scripts/db:/docker-entrypoint-initdb.d/
     networks:
       - tfgnetwork
-  tfg_api:
+  tfg_app:
     build:
       context: .
       dockerfile: Dockerfile

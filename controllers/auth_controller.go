@@ -4,6 +4,8 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs401/TFG/database"
+	"github.com/rs401/TFG/models"
 	"github.com/shareed2k/goth_fiber"
 )
 
@@ -12,8 +14,24 @@ func AuthCallback(c *fiber.Ctx) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db := database.DBConn
+	newUser := new(models.User)
+	newUser.Email = user.Email
+	if user.NickName != "" {
+		newUser.DisplayName = user.NickName
+	} else if user.Name != "" {
+		newUser.DisplayName = user.Name
+	} else {
+		newUser.DisplayName = user.Email
+	}
+	session, err := goth_fiber.SessionStore.Get(c)
+	if err != nil {
+		return err
+	}
+	session.Set("user", user)
+	db.Create(newUser)
 
-	return c.SendString(user.Email)
+	return c.Redirect("/")
 }
 
 func Logout(c *fiber.Ctx) error {
@@ -21,5 +39,5 @@ func Logout(c *fiber.Ctx) error {
 		log.Fatal(err)
 	}
 
-	return c.SendString("logout")
+	return c.Redirect("/")
 }

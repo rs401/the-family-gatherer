@@ -10,6 +10,8 @@ func SetupRoutes(app *fiber.App) {
 	// HTML Routes
 	app.Get("/", controllers.GetIndex)
 	app.Get("/about", controllers.GetAbout)
+	app.Get("/create_forum", controllers.GetCreateForum)
+	app.Post("/create_forum", controllers.PostCreateForum)
 
 	// API Routes
 	// Forum routes
@@ -34,7 +36,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Delete("/api/v1/forum/:fid/thread/:id", controllers.DeletePost)
 
 	// User auth
-	app.Get("/login", goth_fiber.BeginAuthHandler)
+	app.Get("/login/:provider", goth_fiber.BeginAuthHandler)
 	app.Get("/logout", controllers.Logout)
 	app.Get("/auth/callback", controllers.AuthCallback)
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,9 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/template/html"
-	"github.com/joho/godotenv"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/google"
+	"github.com/rs401/TFG/config"
 	"github.com/rs401/TFG/database"
 	"github.com/rs401/TFG/routes"
 	"github.com/shareed2k/goth_fiber"
@@ -21,14 +20,14 @@ func main() {
 
 	app := Setup()
 
-	app.ListenTLS(":"+os.Getenv("API_PORT"), "./server.crt", "./server.key")
+	app.ListenTLS(":"+config.Config("API_PORT"), "./server.crt", "./server.key")
 }
 
 func Setup() *fiber.App {
 	// Load env vars
-	if err := godotenv.Load(".env"); err != nil {
-		panic("Error loading .env file")
-	}
+	// if err := godotenv.Load(".env"); err != nil {
+	// 	panic("Error loading .env file")
+	// }
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,
@@ -37,7 +36,7 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	// app.Use(cors.New())
 
-	config := session.Config{
+	sconfig := session.Config{
 		Expiration:     24 * time.Hour,
 		Storage:        nil,
 		KeyLookup:      "cookie:session_id",
@@ -56,11 +55,11 @@ func Setup() *fiber.App {
 	//  }
 
 	// create session handler
-	sessions := session.New(config)
+	sessions := session.New(sconfig)
 
 	goth_fiber.SessionStore = sessions
 	goth.UseProviders(
-		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "https://127.0.0.1:3000/auth/callback"),
+		google.New(config.Config("GOOGLE_CLIENT_ID"), config.Config("GOOGLE_CLIENT_SECRET"), "https://127.0.0.1:3000/auth/callback"),
 	)
 
 	database.InitDatabase()

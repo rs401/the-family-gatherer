@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs401/TFG/database"
@@ -39,14 +40,30 @@ func GetAbout(c *fiber.Ctx) error {
 
 // Get CreateForum
 func GetCreateForum(c *fiber.Ctx) error {
+	session, err := goth_fiber.SessionStore.Get(c)
+	if err != nil {
+		log.Fatal(err)
+		return c.Redirect("/login")
+	}
+
+	user := session.Get("user")
+	fmt.Println("user in GetCreateForum:", user)
 	// return c.JSON(forums)
 	return c.Render("create_forum", fiber.Map{
 		"Title": "Create Forum",
 	})
 }
 
-// Get CreateForum
+// Post CreateForum
 func PostCreateForum(c *fiber.Ctx) error {
+	session, err := goth_fiber.SessionStore.Get(c)
+	if err != nil {
+		log.Fatal(err)
+		return c.Redirect("/login")
+	}
+
+	user := session.Get("user")
+	fmt.Println("user in PostCreateForum:", user)
 	db := database.DBConn
 	forum := new(models.Forum)
 

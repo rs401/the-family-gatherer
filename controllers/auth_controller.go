@@ -1,25 +1,23 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs401/TFG/database"
 	"github.com/rs401/TFG/models"
 	"github.com/shareed2k/goth_fiber"
-	"gorm.io/gorm"
 )
 
-func getUserByEmail(e string) (*models.User, error) {
+func getUserByEmail(e string) *models.User {
 	db := database.DBConn
 	var user models.User
-	if err := db.Where(&models.User{Email: e}).Find(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
-		return nil, err
+	db.Where("email = ?", e).Find(&user)
+	if user.Email == e {
+		return &user
 	}
-	return &user, nil
+	return nil
 }
 
 func AuthCallback(c *fiber.Ctx) error {
@@ -29,11 +27,11 @@ func AuthCallback(c *fiber.Ctx) error {
 	}
 	db := database.DBConn
 
-	theUser, err := getUserByEmail(returnedUser.Email)
-	if err != nil {
-		log.Fatal(err)
-		return c.Redirect("/login")
-	}
+	theUser := getUserByEmail(returnedUser.Email)
+	token := returnedUser.AccessToken
+	c.Set("token", token)
+	c.Locals("token", token)
+
 	if theUser == nil {
 		newUser := new(models.User)
 		newUser.Email = returnedUser.Email
@@ -51,7 +49,12 @@ func AuthCallback(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("======== Session.ID: %v\n", session.ID())
+	fmt.Printf("======== returnedUser.AccessToken: %v\n", returnedUser.AccessToken)
 	session.Set("user", theUser)
+	session.Set("token", token)
+	session.Save()
 
 	return c.Redirect("/")
 }

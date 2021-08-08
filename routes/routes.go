@@ -7,6 +7,12 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
+
+	// User auth
+	app.Get("/login/:provider", goth_fiber.BeginAuthHandler)
+	app.Get("/logout", controllers.Logout)
+	app.Get("/auth/callback", controllers.AuthCallback)
+
 	// HTML Routes
 	app.Get("/", controllers.GetIndex)
 	app.Get("/about", controllers.GetAbout)
@@ -35,8 +41,4 @@ func SetupRoutes(app *fiber.App) {
 	app.Put("/api/v1/forum/:fid/thread/:id", controllers.UpdatePost)
 	app.Delete("/api/v1/forum/:fid/thread/:id", controllers.DeletePost)
 
-	// User auth
-	app.Get("/login/:provider", goth_fiber.BeginAuthHandler)
-	app.Get("/logout", controllers.Logout)
-	app.Get("/auth/callback", controllers.AuthCallback)
 }

@@ -16,11 +16,16 @@ func GetIndex(c *fiber.Ctx) error {
 	var forums []models.Forum
 	db.Find(&forums)
 	// return c.JSON(forums)
+
 	session, err := goth_fiber.SessionStore.Get(c)
 	if err != nil {
 		return err
 	}
-	fmt.Println(session.Get("user"))
+
+	fmt.Printf("======= GetIndex session.ID:%v\n", session.ID())
+
+	session.Save()
+
 	return c.Render("index", fiber.Map{
 		"Title":  "Hello, World!",
 		"Forums": forums,
@@ -29,6 +34,13 @@ func GetIndex(c *fiber.Ctx) error {
 
 // Get About
 func GetAbout(c *fiber.Ctx) error {
+	session, err := goth_fiber.SessionStore.Get(c)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("======= GetAbout session.ID:%v\n", session.ID())
+	test := session.Get("user")
+	fmt.Printf("======= GetAbout user:%T\n", test)
 	db := database.DBConn
 	var forums []models.Forum
 	db.Find(&forums)

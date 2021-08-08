@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	// "github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/template/html"
@@ -34,15 +34,14 @@ func Setup() *fiber.App {
 	})
 	app.Static("/", "./public")
 	app.Use(logger.New())
-	// app.Use(cors.New())
+	app.Use(cors.New())
 
 	sconfig := session.Config{
 		Expiration:     24 * time.Hour,
-		Storage:        nil,
 		KeyLookup:      "cookie:session_id",
-		CookieDomain:   "",
+		CookieDomain:   "127.0.0.1",
 		CookiePath:     "",
-		CookieSecure:   false,
+		CookieSecure:   true,
 		CookieHTTPOnly: false,
 		// CookieSameSite: "",
 	}
@@ -56,6 +55,7 @@ func Setup() *fiber.App {
 
 	// create session handler
 	sessions := session.New(sconfig)
+	// sessions := session.New()
 
 	goth_fiber.SessionStore = sessions
 	goth.UseProviders(

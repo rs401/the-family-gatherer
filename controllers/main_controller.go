@@ -21,13 +21,16 @@ func GetIndex(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
+	if auth := session.Get("authenticated"); auth == nil {
+		session.Set("authenticated", false)
+	}
 	fmt.Printf("======= GetIndex session.ID:%v\n", session.ID())
+	fmt.Printf("======= GetIndex session.auth:%v\n", session.Get("authenticated"))
 
 	session.Save()
 
 	return c.Render("index", fiber.Map{
-		"Title":  "Hello, World!",
+		"Title":  "Hi, Planet!",
 		"Forums": forums,
 	})
 }
@@ -39,6 +42,7 @@ func GetAbout(c *fiber.Ctx) error {
 		return err
 	}
 	fmt.Printf("======= GetAbout session.ID:%v\n", session.ID())
+	fmt.Printf("======= GetAbout session.auth:%v\n", session.Get("authenticated"))
 	test := session.Get("user")
 	fmt.Printf("======= GetAbout user:%T\n", test)
 	db := database.DBConn

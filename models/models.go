@@ -39,3 +39,9 @@ type Post struct {
 	Thread   Thread
 	// Thread Thread //`json:"thread"`
 }
+
+type Session struct {
+	gorm.Model
+	UserID uint `json:"userid" gorm:"not null"`
+	Email  string
+}

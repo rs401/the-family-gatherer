@@ -21,6 +21,9 @@ _testmain.go
 .env
 server.crt
 server.key
+*.BAK
+notes.md
+main
 
 /VERSION.cache
 /bin/

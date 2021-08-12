@@ -1,5 +1,5 @@
 # Start from golang v1.13.4 base image to have access to go modules
-FROM golang:alpine
+FROM golang:buster
 
 # create a working directory
 WORKDIR /app
@@ -10,7 +10,8 @@ ARG API_PORT
 # Fetch dependencies on separate layer as they are less likely to
 # change on every build and will therefore be cached for speeding
 # up the next build
-COPY ./go.mod ./go.sum ./
+COPY ./go.mod ./
+COPY ./go.sum ./
 RUN go mod download
 
 # copy source from the host to the working directory inside

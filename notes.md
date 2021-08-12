@@ -11,3 +11,7 @@ https://hackernoon.com/how-to-create-golang-rest-api-project-layout-configuratio
 
 fiber with casbin roles boilerplate
 https://github.com/sujit-baniya/fiber-boilerplate
+
+Todo:
+    * remove all the goth crap
+    * or just add all the session stuff from

@@ -38,8 +38,8 @@ func Setup() *fiber.App {
 
 	sconfig := session.Config{
 		Expiration:     24 * time.Hour,
-		KeyLookup:      "cookie:session_id",
-		CookieDomain:   "127.0.0.1",
+		KeyLookup:      "header:session_id",
+		CookieDomain:   "",
 		CookiePath:     "",
 		CookieSecure:   true,
 		CookieHTTPOnly: false,

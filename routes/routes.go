@@ -9,9 +9,14 @@ import (
 func SetupRoutes(app *fiber.App) {
 
 	// User auth
+	app.Get("/login", controllers.Login)
+	app.Get("/register", controllers.Register)
 	app.Get("/login/:provider", goth_fiber.BeginAuthHandler)
 	app.Get("/logout", controllers.Logout)
 	app.Get("/auth/callback", controllers.AuthCallback)
+
+	app.Post("/login", controllers.DoLogin)
+	app.Post("/register", controllers.DoRegister)
 
 	// HTML Routes
 	app.Get("/", controllers.GetIndex)

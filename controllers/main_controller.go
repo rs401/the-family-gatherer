@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt"
+	"github.com/rs401/TFG/config"
 	"github.com/rs401/TFG/database"
 	"github.com/rs401/TFG/models"
 	"github.com/shareed2k/goth_fiber"
@@ -15,7 +17,6 @@ func GetIndex(c *fiber.Ctx) error {
 	db := database.DBConn
 	var forums []models.Forum
 	db.Find(&forums)
-	// return c.JSON(forums)
 
 	session, err := goth_fiber.SessionStore.Get(c)
 	if err != nil {
@@ -24,14 +25,31 @@ func GetIndex(c *fiber.Ctx) error {
 	if auth := session.Get("authenticated"); auth == nil {
 		session.Set("authenticated", false)
 	}
-	fmt.Printf("======= GetIndex session.ID:%v\n", session.ID())
-	fmt.Printf("======= GetIndex session.auth:%v\n", session.Get("authenticated"))
-
 	session.Save()
 
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.Config("JWT_SECRET")), nil
+	})
+
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	name := "Guest"
+	user := getUserByEmail(claims.Issuer)
+	if user != nil {
+		name = user.DisplayName
+	}
 	return c.Render("index", fiber.Map{
 		"Title":  "Hi, Planet!",
 		"Forums": forums,
+		"User":   name,
 	})
 }
 

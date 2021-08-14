@@ -18,8 +18,8 @@ func InitDatabase() {
 	dbpass := config.Config("POSTGRES_PASSWORD")
 	dbuser := config.Config("POSTGRES_USER")
 	dbport := config.Config("POSTGRES_PORT")
-	dbhost := config.Config("POSTGRES_HOST")
-	// dbhost := "localhost"
+	// dbhost := config.Config("POSTGRES_HOST")
+	dbhost := "localhost"
 	dbname := config.Config("POSTGRES_DB")
 
 	dsn := fmt.Sprintf("host=" + dbhost + " user=" + dbuser + " password=" + dbpass + " dbname=" + dbname + " port=" + dbport)

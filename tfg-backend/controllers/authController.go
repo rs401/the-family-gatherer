@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -24,6 +25,21 @@ func getUserByEmail(e string) *models.User {
 	return nil
 }
 
+func getUserById(i string) *models.User {
+	db := database.DBConn
+	var user models.User
+	id, err := strconv.Atoi(i)
+	if err != nil {
+		fmt.Printf("getUserById failed to convert AtoI: %s\n", err.Error())
+		return nil
+	}
+	db.Where("id = ?", id).Find(&user)
+	if int(user.Id) == id {
+		return &user
+	}
+	return nil
+}
+
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
 
@@ -33,7 +49,7 @@ func Register(c *fiber.Ctx) error {
 
 	if err := getUserByEmail(data["email"]); err != nil {
 		ret := make(map[string]string)
-		ret["code"] = "Email already exists in our database."
+		ret["message"] = "Email already exists in our database."
 		return c.JSON(ret)
 	}
 
@@ -57,11 +73,8 @@ func Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	var user models.User
-
-	database.DBConn.Where("email = ?", data["email"]).First(&user)
-
-	if user.Id == 0 {
+	user := getUserByEmail(data["email"])
+	if user == nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
 			"message": "user not found",
@@ -77,7 +90,7 @@ func Login(c *fiber.Ctx) error {
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    strconv.Itoa(int(user.Id)),
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), //1 day
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	token, err := claims.SignedString([]byte(SecretKey))
@@ -99,7 +112,7 @@ func Login(c *fiber.Ctx) error {
 	c.Cookie(&cookie)
 
 	return c.JSON(fiber.Map{
-		"message": "success",
+		"message": "Successfully logged in.",
 	})
 }
 
@@ -119,9 +132,13 @@ func User(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.StandardClaims)
 
-	var user models.User
-
-	database.DBConn.Where("id = ?", claims.Issuer).First(&user)
+	user := getUserById(claims.Issuer)
+	if user == nil {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "user not found",
+		})
+	}
 
 	return c.JSON(user)
 }

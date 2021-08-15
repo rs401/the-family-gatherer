@@ -1,4 +1,4 @@
-module github.com/rs401/TFG
+module github.com/rs401/TFG/tfg-backend
 
 go 1.16
 

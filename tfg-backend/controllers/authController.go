@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/rs401/TFG/config"
-	"github.com/rs401/TFG/database"
-	"github.com/rs401/TFG/models"
+	"github.com/rs401/TFG/tfg-backend/config"
+	"github.com/rs401/TFG/tfg-backend/database"
+	"github.com/rs401/TFG/tfg-backend/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -90,7 +90,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	cookie := fiber.Cookie{
-		Name:     "jwt",
+		Name:     "tfg",
 		Value:    token,
 		Expires:  time.Now().Add(time.Hour * 24),
 		HTTPOnly: true,
@@ -104,7 +104,7 @@ func Login(c *fiber.Ctx) error {
 }
 
 func User(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
+	cookie := c.Cookies("tfg")
 
 	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SecretKey), nil
@@ -128,7 +128,7 @@ func User(c *fiber.Ctx) error {
 
 func Logout(c *fiber.Ctx) error {
 	cookie := fiber.Cookie{
-		Name:     "jwt",
+		Name:     "tfg",
 		Value:    "",
 		Expires:  time.Now().Add(-time.Hour),
 		HTTPOnly: true,

@@ -4,8 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/rs401/TFG/database"
-	"github.com/rs401/TFG/routes"
+	"github.com/rs401/TFG/tfg-backend/database"
+	"github.com/rs401/TFG/tfg-backend/routes"
 )
 
 func main() {

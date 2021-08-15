@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs401/TFG/controllers"
+	"github.com/rs401/TFG/tfg-backend/controllers"
 )
 
 func Setup(app *fiber.App) {

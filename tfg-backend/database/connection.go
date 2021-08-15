@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 
-	"github.com/rs401/TFG/config"
-	"github.com/rs401/TFG/models"
+	"github.com/rs401/TFG/tfg-backend/config"
+	"github.com/rs401/TFG/tfg-backend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

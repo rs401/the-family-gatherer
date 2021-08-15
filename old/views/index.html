@@ -1,0 +1,16 @@
+
+{{template "partials/header" .}}
+
+<div class="main">
+  <div class="container">
+    <h1>{{.Title}}</h1>
+    Hey {{ .User }}
+    <ul class="list-group">
+    {{range .Forums}}
+        <li class="list-group-item">{{.Name}}</li>
+    {{end}}
+    </ul>
+  </div>
+</div>
+
+{{template "partials/footer" .}}

@@ -374,7 +374,34 @@ func GetPost(c *fiber.Ctx) error {
 }
 
 func NewPost(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
+	// Check tid valid
+	tid, err := strconv.Atoi(c.Params("tid"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
+	var thread models.Thread
+	db.Find(&thread, tid)
+	if thread.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
+	}
 	post := new(models.Post)
 	if err := c.BodyParser(&post); err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -382,31 +409,85 @@ func NewPost(c *fiber.Ctx) error {
 			"message": "badrequest",
 		})
 	}
+	// Set post ThreadID and UserID
+	post.ThreadID = thread.ID
+	post.UserID = user.ID
 	db.Create(&post)
 	return c.JSON(post)
 }
 
 func DeletePost(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
-	id := c.Params("id")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
+	// Check post exists
 	var post models.Post
 	db.Find(&post, id)
-	if post.Body == "" {
-		return c.Status(500).SendString("Post does not exist in the database.")
+	if post.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
+	}
+	// Check user is owner
+	if post.UserID != user.ID {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthorized",
+		})
 	}
 
 	db.Delete(&post)
-	return c.SendString("Post successfully Deleted from database.")
+	c.Status(fiber.StatusOK)
+	return c.JSON(fiber.Map{
+		"message": "ok",
+	})
 }
 
 func UpdatePost(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
-	id := c.Params("id")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
 	var post models.Post
 	var updPost = new(models.Post)
 	db.First(&post, id)
-	if post.Body == "" {
-		return c.Status(500).SendString("Post does not exist in the database.")
+	if post.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
 	if err := c.BodyParser(updPost); err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -414,17 +495,17 @@ func UpdatePost(c *fiber.Ctx) error {
 			"message": "badrequest",
 		})
 	}
-	theId, idErr := strconv.Atoi(id)
-	if idErr != nil {
-		return c.Status(422).SendString(idErr.Error())
+	// Check user is owner
+	if post.UserID != user.ID {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthorized",
+		})
 	}
-	updPost.ID = uint(theId)
-	name := updPost.Body
-
-	if name == "" {
-		return c.Status(400).SendString("Fields cannot be empty.")
+	if updPost.Body != "" {
+		post.Body = updPost.Body
 	}
-	db.Save(&updPost)
+	db.Save(&post)
 
-	return c.JSON(updPost)
+	return c.JSON(post)
 }

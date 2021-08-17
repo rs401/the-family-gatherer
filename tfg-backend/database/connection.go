@@ -30,6 +30,6 @@ func InitDatabase() {
 	}
 	fmt.Println("Connected to database.")
 
-	DBConn.AutoMigrate(&models.User{}) //, &models.Forum{}, &models.Thread{}, &models.Post{})
+	DBConn.AutoMigrate(&models.User{}, &models.Forum{}, &models.Thread{}, &models.Post{})
 	fmt.Println("Database migrated.")
 }

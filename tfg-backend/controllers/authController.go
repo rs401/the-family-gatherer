@@ -34,10 +34,30 @@ func getUserById(i string) *models.User {
 		return nil
 	}
 	db.Where("id = ?", id).Find(&user)
-	if int(user.Id) == id {
+	if int(user.ID) == id {
 		return &user
 	}
 	return nil
+}
+
+func getUserByJwt(cookie string) *models.User {
+
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+
+	if err != nil {
+		return nil // unauthenticated
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	user := getUserById(claims.Issuer)
+	if user == nil {
+		return nil // user not found
+	}
+
+	return user
 }
 
 func Register(c *fiber.Ctx) error {
@@ -52,8 +72,20 @@ func Register(c *fiber.Ctx) error {
 		ret["message"] = "Email already exists in our database."
 		return c.JSON(ret)
 	}
-
-	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
+	// Check passwords match
+	pass1 := data["password1"]
+	pass2 := data["password2"]
+	fmt.Println("pass1: ", pass1)
+	fmt.Println("pass2: ", pass2)
+	if pass1 == "" || pass1 != pass2 {
+		ret := make(map[string]string)
+		ret["message"] = "Passwords do not match."
+		return c.JSON(ret)
+	}
+	password, err := bcrypt.GenerateFromPassword([]byte(data["password1"]), 14)
+	if err != nil {
+		fmt.Println("=========== Houston, we have a problem")
+	}
 
 	user := models.User{
 		Name:     data["name"],
@@ -89,7 +121,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(user.Id)),
+		Issuer:    strconv.Itoa(int(user.ID)),
 		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 	})
 

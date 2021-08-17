@@ -237,16 +237,47 @@ func NewThread(c *fiber.Ctx) error {
 }
 
 func DeleteThread(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
-	id := c.Params("id")
+	// Convert string parameter to int
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
+	// Find the thread
 	var thread models.Thread
 	db.Find(&thread, id)
-	if thread.Title == "" {
-		return c.Status(500).SendString("Thread does not exist in the database.")
+	if thread.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
-
+	// Check user is owner
+	if thread.UserID != user.ID {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthorized",
+		})
+	}
 	db.Delete(&thread)
-	return c.SendString("Thread successfully Deleted from database.")
+	c.Status(fiber.StatusOK)
+	return c.JSON(fiber.Map{
+		"message": "ok",
+	})
 }
 
 func UpdateThread(c *fiber.Ctx) error {

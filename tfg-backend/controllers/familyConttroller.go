@@ -281,21 +281,42 @@ func DeleteThread(c *fiber.Ctx) error {
 }
 
 func UpdateThread(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
-	id := c.Params("id")
+	// Convert string parameter to int
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
 	var oldThread models.Thread
 	var updThread = new(models.Thread)
 	db.First(&oldThread, id)
-	// Check forum exists
-	fid := oldThread.ForumID
-	var forum models.Forum
-	db.Find(&forum, fid)
-	if forum.Name == "" {
-		return c.Status(418).SendString("Forum doesn't exist")
-	}
 
-	if oldThread.Title == "" {
-		return c.Status(500).SendString("Thread does not exist in the database.")
+	if oldThread.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
+	}
+	// Check user is owner
+	if oldThread.UserID != user.ID {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthorized",
+		})
 	}
 	if err := c.BodyParser(updThread); err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -303,27 +324,16 @@ func UpdateThread(c *fiber.Ctx) error {
 			"message": "badrequest",
 		})
 	}
-	theId, idErr := strconv.Atoi(id)
-	if idErr != nil {
-		return c.Status(422).SendString(idErr.Error())
+	if title := strings.TrimSpace(updThread.Title); title != "" {
+		oldThread.Title = updThread.Title
 	}
-	updThread.ID = uint(theId)
-	if title := strings.TrimSpace(updThread.Title); title == "" {
-		updThread.Title = oldThread.Title
-	}
-	if body := strings.TrimSpace(updThread.Body); body == "" {
-		updThread.Body = oldThread.Body
-	}
-	if userid := updThread.UserID; userid == 0 {
-		updThread.UserID = oldThread.UserID
-	}
-	if forumid := updThread.ForumID; forumid == 0 {
-		updThread.ForumID = oldThread.ForumID
+	if body := strings.TrimSpace(updThread.Body); body != "" {
+		oldThread.Body = updThread.Body
 	}
 
-	db.Save(&updThread)
+	db.Save(&oldThread)
 
-	return c.JSON(updThread)
+	return c.JSON(oldThread)
 }
 
 // Posts

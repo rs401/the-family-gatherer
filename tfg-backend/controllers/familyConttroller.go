@@ -98,30 +98,52 @@ func DeleteForum(c *fiber.Ctx) error {
 }
 
 func UpdateForum(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
-	id := c.Params("id")
+	// Convert string parameter to int
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
+	// Get original and apply updates
 	var forum models.Forum
 	var updForum = new(models.Forum)
-	db.First(&forum, id)
-	if forum.Name == "" {
-		return c.Status(500).SendString("Forum does not exist in the database.")
+	res := db.First(&forum, id)
+	if res.Error != nil {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
+	// Parse new values
 	if err := c.BodyParser(updForum); err != nil {
 		return c.Status(503).SendString(err.Error())
 	}
-	theId, idErr := strconv.Atoi(id)
-	if idErr != nil {
-		return c.Status(422).SendString(idErr.Error())
+	// Check not empty string
+	if updForum.Name == "" {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
-	updForum.ID = uint(theId)
-	name := updForum.Name
+	// Update forum and save
+	forum.Name = updForum.Name
+	db.Save(&forum)
 
-	if name == "" {
-		return c.Status(400).SendString("Fields cannot be empty.")
-	}
-	db.Save(&updForum)
-
-	return c.JSON(updForum)
+	return c.JSON(forum)
 }
 
 // Threads

@@ -28,7 +28,10 @@ func GetForum(c *fiber.Ctx) error {
 	var forum models.Forum
 	db.Find(&forum, id)
 	if forum.Name == "" {
-		return c.Status(500).SendString("Forum does not exist in the database.")
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
 	return c.JSON(forum)
 }
@@ -153,7 +156,10 @@ func GetThreads(c *fiber.Ctx) error {
 	var threads []models.Thread
 	fid, err := strconv.Atoi(c.Params("fid"))
 	if err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	db.Where(&models.Thread{ForumID: uint(fid)}).Find(&threads)
 	return c.JSON(threads)
@@ -162,11 +168,20 @@ func GetThreads(c *fiber.Ctx) error {
 // Get single thread
 func GetThread(c *fiber.Ctx) error {
 	db := database.DBConn
-	id := c.Params("id")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
 	var thread models.Thread
 	db.Find(&thread, id)
-	if thread.Title == "" {
-		return c.Status(500).SendString("Thread does not exist in the database.")
+	if thread.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
 	return c.JSON(thread)
 }

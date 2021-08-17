@@ -48,7 +48,10 @@ func NewForum(c *fiber.Ctx) error {
 	db := database.DBConn
 	forum := new(models.Forum)
 	if err := c.BodyParser(&forum); err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	forum.UserID = user.ID
 	forum.User = *user
@@ -133,7 +136,10 @@ func UpdateForum(c *fiber.Ctx) error {
 	}
 	// Parse new values
 	if err := c.BodyParser(updForum); err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	// Check not empty string
 	if updForum.Name == "" {
@@ -187,23 +193,45 @@ func GetThread(c *fiber.Ctx) error {
 }
 
 func NewThread(c *fiber.Ctx) error {
+	// Get cookie
+	cookie := c.Cookies("tfg")
+	// Check user
+	user := getUserByJwt(cookie)
+	if user == nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// Grab db
 	db := database.DBConn
 	thread := new(models.Thread)
 	if err := c.BodyParser(&thread); err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	// Check forum exists
 	fid, err := strconv.Atoi(c.Params("fid"))
 	if err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	var forum models.Forum
 	db.Find(&forum, fid)
-	if forum.Name == "" {
-		return c.Status(418).SendString("Forum doesn't exist")
+	if forum.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
 	thread.ForumID = uint(fid)
 	thread.Forum = forum
+	thread.UserID = user.ID
+	thread.User = *user
 	db.Create(&thread)
 	return c.JSON(thread)
 }
@@ -239,7 +267,10 @@ func UpdateThread(c *fiber.Ctx) error {
 		return c.Status(500).SendString("Thread does not exist in the database.")
 	}
 	if err := c.BodyParser(updThread); err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	theId, idErr := strconv.Atoi(id)
 	if idErr != nil {
@@ -289,7 +320,10 @@ func NewPost(c *fiber.Ctx) error {
 	db := database.DBConn
 	post := new(models.Post)
 	if err := c.BodyParser(&post); err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	db.Create(&post)
 	return c.JSON(post)
@@ -318,7 +352,10 @@ func UpdatePost(c *fiber.Ctx) error {
 		return c.Status(500).SendString("Post does not exist in the database.")
 	}
 	if err := c.BodyParser(updPost); err != nil {
-		return c.Status(503).SendString(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
 	}
 	theId, idErr := strconv.Atoi(id)
 	if idErr != nil {

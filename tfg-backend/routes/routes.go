@@ -29,10 +29,10 @@ func Setup(app *fiber.App) {
 	api.Delete("/thread/:id", controllers.DeleteThread)
 
 	// Post routes
-	api.Get("/post/:tid", controllers.GetPosts)
-	api.Get("/forum/:fid/thread/:tid/post/:id", controllers.GetPost)
-	api.Post("/forum/:fid/thread/:tid/post", controllers.NewPost)
-	api.Put("/forum/:fid/thread/:id", controllers.UpdatePost)
-	api.Delete("/forum/:fid/thread/:id", controllers.DeletePost)
+	api.Get("/:tid/post", controllers.GetPosts)
+	api.Get("/post/:id", controllers.GetPost)
+	api.Post("/:tid/post", controllers.NewPost)
+	api.Put("/post/:id", controllers.UpdatePost)
+	api.Delete("/post/:id", controllers.DeletePost)
 
 }

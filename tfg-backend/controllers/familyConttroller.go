@@ -341,18 +341,34 @@ func UpdateThread(c *fiber.Ctx) error {
 func GetPosts(c *fiber.Ctx) error {
 	db := database.DBConn
 	var posts []models.Post
-	db.Find(&posts)
+	tid, err := strconv.Atoi(c.Params("tid"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
+	db.Where(&models.Post{ThreadID: uint(tid)}).Find(&posts)
 	return c.JSON(posts)
 }
 
 // Get single post
 func GetPost(c *fiber.Ctx) error {
 	db := database.DBConn
-	id := c.Params("id")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "badrequest",
+		})
+	}
 	var post models.Post
 	db.Find(&post, id)
-	if post.Body == "" {
-		return c.Status(500).SendString("Post does not exist in the database.")
+	if post.ID == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "notfound",
+		})
 	}
 	return c.JSON(post)
 }

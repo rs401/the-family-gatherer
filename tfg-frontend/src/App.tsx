@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route } from "react-router-dom";
 import "./App.css";
 import Nav from "./components/Nav";
+import Forums from "./pages/Forums";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -31,6 +32,7 @@ function App() {
           <Route path="/" exact component={() => <Home name={name} setName={setName} />} />
           <Route path="/login" exact component={() => <Login setName={setName} />} />
           <Route path="/register" component={Register} />
+          <Route path="/forums" component={Forums} />
         </div>
       </BrowserRouter>
     </div>

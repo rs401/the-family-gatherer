@@ -12,7 +12,6 @@ const Nav = (props: {name: string, setName: (name: string) => void}) => {
     }
     
     let menu;
-    console.log('====== name in nav: ' + props.name)
     if (props.name === '' || props.name === undefined){
         menu = (
             <ul className="navbar-nav me-auto mb-2 mb-md-0">
@@ -71,6 +70,11 @@ const Nav = (props: {name: string, setName: (name: string) => void}) => {
               <li className="nav-item">
                 <Link className="nav-link" to="#">
                   About
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/forums">
+                  Forums
                 </Link>
               </li>
               <li className="nav-item">

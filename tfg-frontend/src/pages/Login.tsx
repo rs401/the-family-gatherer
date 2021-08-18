@@ -19,8 +19,8 @@ const Login = (props: {setName: (name: string) => void}) => {
         });
 
         const data = await response.json();
-        props.setName(data.name)
         setRedirect(true);
+        props.setName(data.name)
     }
 
     if(redirect){

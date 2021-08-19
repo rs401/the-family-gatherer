@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route } from "react-router-dom";
 import "./App.css";
 import Nav from "./components/Nav";
+import Forum from "./pages/Forum";
 import Forums from "./pages/Forums";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -23,7 +24,7 @@ function App() {
                 setName(data.name)
             }
         )();
-    });
+    },[setName]);
   return (
     <div className="App">
       <BrowserRouter>
@@ -33,6 +34,7 @@ function App() {
           <Route path="/login" exact component={() => <Login setName={setName} />} />
           <Route path="/register" component={Register} />
           <Route path="/forums" component={Forums} />
+          <Route path="/forum/:id" component={Forum} />
         </div>
       </BrowserRouter>
     </div>

@@ -18,7 +18,7 @@ type Forum struct {
 	Name    string   `json:"name" gorm:"not null" form:"name"`
 	UserID  uint     `json:"userid" gorm:"not null"`
 	User    User     `json:"-"`
-	Threads []Thread `json:"-"`
+	Threads []Thread `json:"threads"`
 }
 
 type Thread struct {
@@ -29,7 +29,7 @@ type Thread struct {
 	User    User   `json:"-"`
 	ForumID uint   `json:"forum_id" gorm:"not null"`
 	Forum   Forum  `json:"-"`
-	Posts   []Post `json:"-"`
+	Posts   []Post `json:"posts"`
 }
 
 type Post struct {

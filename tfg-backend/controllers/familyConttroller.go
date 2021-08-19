@@ -26,8 +26,8 @@ func GetForum(c *fiber.Ctx) error {
 		return err
 	}
 	var forum models.Forum
-	db.Find(&forum, id)
-	if forum.Name == "" {
+	db.Preload("Threads").Find(&forum, id)
+	if forum.ID == 0 {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
 			"message": "notfound",
@@ -182,7 +182,7 @@ func GetThread(c *fiber.Ctx) error {
 		})
 	}
 	var thread models.Thread
-	db.Find(&thread, id)
+	db.Preload("Posts").Find(&thread, id)
 	if thread.ID == 0 {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{

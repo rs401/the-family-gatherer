@@ -27,7 +27,7 @@ const Forums = () => {
     let theStuff;
     if(loaded){
         theStuff = (
-            <div className="forum-list shadow rounded bg-dark">
+            <div >
             { forums.map((forum, index) => {
                 return <Link to={`/forum/${forum.ID}`} key={index}>
                     <div className="forum-list-item " key={index}>
@@ -43,7 +43,7 @@ const Forums = () => {
     }
 
     return (
-        <div>
+        <div className="forum-list shadow rounded ">
             <div className="row justify-content-between">
                 <div className="col-2">
                     Forums
